@@ -13,6 +13,7 @@ for i = 1:size(trainingImages,2)
     if(trainingImages(i)==1)
         imageName = annotationImages(i).image.name;
         f = fullfile(baseFolder,imageName);
+        h_fig=figure;
         image = imread(f);
         imshow(image);
         hold on
@@ -47,29 +48,46 @@ for i = 1:size(trainingImages,2)
         for k = 1 : numAnnot
            joints = humansJoints{k};
            parts = getParts(joints);
-           rectangle('Position', positions(k,:), 'EdgeColor','r','LineWidth',3)
+           %draw head rectengales
+           %rectangle('Position', positions(k,:), 'EdgeColor','r','LineWidth',3);
+           drawHeadRect(positions(k,:))
            %draw joints
-           for g = 1:size(joints,1)
-               if(joints(g,4)==1)
-                   plot(joints(g,1),joints(g,2),'r*', 'LineWidth', 2, 'MarkerSize', 5)
-                   %id - joint id (0 - r ankle, 1 - r knee, 2 - r hip, 3 - l hip, 4 - l knee, 5 - l ankle, 6 - pelvis,
-                   %7 - thorax, 8 - upper neck, 9 - head top, 10 - r wrist, 11 - r elbow, 12 - r shoulder, 13 - l shoulder,
-                   %14 - l elbow, 15 - l wrist)
-               end
-           end
+           drawJoints(joints)
            %draw body parts if visible
-           for p = 1:size(parts,1)
-               if(parts(p,5)==1)
-                line([parts(p,1),parts(p,3)],[parts(p,2),parts(p,4)], 'Color','red', 'LineWidth',3)
-               end
-           end
+           drawBodyParts(parts)
         end
         hold off
+        %set(h_fig,'KeyPressFcn',@myfun);
         w = waitforbuttonpress;
+        value = double(get(gcf,'CurrentCharacter'))
         close all
     end
 end
+% function myfun(src,event)
+%    disp(event.Key);
+% end
 
+function drawHeadRect(position)
+    rectangle('Position', position, 'EdgeColor','r','LineWidth',3);
+end
+function drawJoints(joints)
+    for g = 1:size(joints,1)
+       if(joints(g,4)==1)
+           plot(joints(g,1),joints(g,2),'r*', 'LineWidth', 2, 'MarkerSize', 5)
+           %id - joint id (0 - r ankle, 1 - r knee, 2 - r hip, 3 - l hip, 4 - l knee, 5 - l ankle, 6 - pelvis,
+           %7 - thorax, 8 - upper neck, 9 - head top, 10 - r wrist, 11 - r elbow, 12 - r shoulder, 13 - l shoulder,
+           %14 - l elbow, 15 - l wrist)
+       end
+    end
+end
+
+function drawBodyParts(parts)
+    for p = 1:size(parts,1)
+       if(parts(p,5)==1)
+            line([parts(p,1),parts(p,3)],[parts(p,2),parts(p,4)], 'Color','red', 'LineWidth',3)
+       end
+    end
+end
 function parts = getParts(joints)
     %body parts: Rleg=Rankle0-Rknee1, Lleg=Lankle5-Lknee4, Rthigh = Rknee1-Rhip2, Lthigh = Lknee4-Lhip3, body=upper
     %neck8- pelvis6, Rneck8-Rshoulder12, Lneck8-Lshoulder13, Rupper arm = %Rshoulder12-Relbow11, Lupper arm = Lshoulder13-Relbow14,
